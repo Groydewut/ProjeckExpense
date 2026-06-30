@@ -2,7 +2,9 @@ package handlers
 
 import (
 	"CLIExpense/models"
+	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -54,6 +56,35 @@ func ExpensesCreateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusCreated)
 	fmt.Fprint(w, "Трата добавлена")
+}
+
+// ! Создание запроса одной траты по ID
+func GetExpenseByID(w http.ResponseWriter, r *http.Request) {
+	idStr := chi.URLParam(r, "id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil || id < 0 {
+		http.Error(w, "Отправлены не верные данные", http.StatusBadRequest)
+		return
+	}
+	res, err := models.GetOneExpense(id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			http.Error(w, "Элемента с таким ID не существует", http.StatusNotFound)
+			return
+		}
+		http.Error(w, "Ошибка сервера", http.StatusInternalServerError)
+		return
+
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	err = json.NewEncoder(w).Encode(res)
+
+	if err != nil {
+		http.Error(w, "Ошибка кодирования", http.StatusBadRequest)
+		return
+	}
 }
 
 //! Создание DLEATE запроса(упращённо)

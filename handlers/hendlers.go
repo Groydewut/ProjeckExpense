@@ -32,7 +32,7 @@ func ExpensesHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(expenses)
 }
 
-// !Сохдание пост запроса, добавление новой траты
+// !Создание пост запроса, добавление новой траты
 func ExpensesCreateHandler(w http.ResponseWriter, r *http.Request) {
 	//? для отправки запроса - curl -Method Post -Uri "http://localhost:8080/add" -Header @{"Content-Type"="application/json"} -Body '{"name":"Pizza","price":850}'
 	var newExpense models.Expense
@@ -69,7 +69,7 @@ func GetExpenseByID(w http.ResponseWriter, r *http.Request) {
 	res, err := models.GetOneExpense(id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			http.Error(w, "Элемента с таким ID не существует", http.StatusNotFound)
+			http.Error(w, "Элемента с таким ID не существует или он был удалён", http.StatusNotFound)
 			return
 		}
 		http.Error(w, "Ошибка сервера", http.StatusInternalServerError)
@@ -87,8 +87,7 @@ func GetExpenseByID(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-//! Создание DLEATE запроса(упращённо)
-
+// ! Создание DLEATE запроса
 func ExpensesDel(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id") // Достанет то, что попало в {id}
 	id, err := strconv.Atoi(idStr)

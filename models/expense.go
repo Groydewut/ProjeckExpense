@@ -37,7 +37,7 @@ const Filename = "my_expenses.json"
 
 func TotalFromPrice() (float64, error) {
 	var total float64
-	err := DB.QueryRow("SELECT COALESCE(SUM(price),0) FROM expenses WHERE deleted_at IS NULL").Scan(&total) //создание запрос который вернёт одну строку, COALESCE(SUM(price),0) - говорит что если первое значение NULL влзми второе значение
+	err := DB.QueryRow("SELECT COALESCE(SUM(price),0) FROM expenses WHERE deleted_at IS NULL").Scan(&total) //создание запрос который вернёт одну строку, COALESCE(SUM(price),0) - говорит что если первое значение NULL возми второе значение
 	if err != nil {
 		return 0, err
 	}
@@ -107,7 +107,7 @@ func InsertExpense(e Expense) error {
 	return nil
 }
 
-func InitDB() error { //! Сощдание подключения к базе данных
+func InitDB() error { //! Создание подключения к базе данных
 	host := os.Getenv("DB_HOST")
 	port := os.Getenv("DB_PORT")
 	user := os.Getenv("DB_USER")
@@ -143,7 +143,7 @@ func InitDB() error { //! Сощдание подключения к базе д
 
 func (b *Budget) LoadFromFile(filename string) error { //! этот процесс называется десериализация, сбор среза байт в читаемые строки
 	if filename == "" { //! Проверка не пустое ли поле на пришло
-		return fmt.Errorf("Ошибка, имя фыйла пустое поле!")
+		return fmt.Errorf("Ошибка, имя файла пустое поле!")
 	}
 
 	res, err := os.ReadFile(filename)
@@ -163,7 +163,7 @@ func (b *Budget) LoadFromFile(filename string) error { //! этот процес
 
 func (b *Budget) SaveToFile(filename string) error { //todo этот процесс называется сериализация, создание из строки срез байтов и запись в файл
 	if filename == "" { //! Проверка не пустое ли поле на пришло
-		return fmt.Errorf("Ошибка, имя фыйла пустое поле!")
+		return fmt.Errorf("Ошибка, имя файла пустое поле!")
 	}
 	res, err := json.Marshal(b.Tracker) //!превращение списка трат в []byte, обязательно две переменные для результат и отработки ошибок
 	if err != nil {

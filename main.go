@@ -32,7 +32,7 @@ func main() {
 	//!определяем маршруты(rest API)
 
 	r.Get("/expenses", handlers.ExpensesHandler)
-	r.Get("/expense/{id}", handlers.GetExpenseByID)
+	r.Get("/expenses/{id}", handlers.GetExpenseByID)
 	r.Post("/add", handlers.ExpensesCreateHandler)
 	r.Get("/total", handlers.TotalHandler)
 	// Магия chi: красивый URL-параметр {id} вместо ?id=...

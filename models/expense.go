@@ -46,6 +46,16 @@ func TotalFromPrice() (float64, error) {
 
 }
 
+func GetOneExpense(id int) (Expense, error) {
+	query := "SELECT id,name,price,category,deleted_at FROM expenses WHERE id=$1 AND deleted_at IS NULL"
+	var e Expense
+	err := DB.QueryRow(query, id).Scan(&e.ID, &e.Name, &e.Price, &e.Category, &e.DeletedAt)
+	if err != nil {
+		return Expense{}, err
+	}
+	return e, nil
+}
+
 func DeleteFromID(id int) error {
 	query := "UPDATE expenses SET deleted_at = NOW() WHERE id=$1 AND deleted_at IS NULL" //удаление строки по id ипользуя плейсхолдер(подставное значение,защита от sql инъекций)
 	// ! AND deleted_at IS NULL — это защита от повторного удаления уже удаленного элемента

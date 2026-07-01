@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 	"os"
 	"strconv"
 	"strings"
@@ -51,7 +52,19 @@ func GetOneExpense(id int) (Expense, error) {
 	var e Expense
 	err := DB.QueryRow(query, id).Scan(&e.ID, &e.Name, &e.Price, &e.Category, &e.DeletedAt)
 	if err != nil {
-		return Expense{}, err
+		if errors.Is(err, sql.ErrNoRows) {
+			return Expense{}, AppError{
+				Err:     err,
+				Message: "Трата с таким id не найдена",
+				Status:  http.StatusNotFound,
+			}
+		}
+		return Expense{}, AppError{
+			Err:     err,
+			Message: "Внутреняя ошибка базы данных",
+			Status:  http.StatusInternalServerError,
+		}
+
 	}
 	return e, nil
 }
@@ -62,16 +75,28 @@ func DeleteFromID(id int) error {
 	res, err := DB.Exec(query, id)
 	// res хранит результат удаления, объект sql.Result
 	if err != nil {
-		return err
+		return AppError{
+			Err:     err,
+			Message: "Ошибка сервера",
+			Status:  http.StatusInternalServerError,
+		}
 	}
 
 	count, err := res.RowsAffected() // проверяем количество затронутых строк
 	if err != nil {
-		return err
+		return AppError{
+			Err:     err,
+			Message: "Ошибка сервера",
+			Status:  http.StatusInternalServerError,
+		}
 	}
 
 	if count == 0 {
-		return fmt.Errorf("трата с ID %d не найдена", id)
+		return AppError{
+			Err:     err,
+			Message: "Траты с таким id не существует или она удалена",
+			Status:  http.StatusNotFound,
+		}
 	}
 
 	return nil
@@ -101,7 +126,11 @@ func InsertExpense(e Expense) error {
 	query := "INSERT INTO expenses (name, price, category) VALUES ($1, $2, $3)"
 	_, err := DB.Exec(query, e.Name, e.Price, e.Category)
 	if err != nil {
-		return err
+		return AppError{
+			Err:     err,
+			Message: "Не удалось сохранить трату в базе данных",
+			Status:  http.StatusInternalServerError,
+		}
 	}
 
 	return nil

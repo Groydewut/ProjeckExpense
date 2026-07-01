@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"CLIExpense/models"
-	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -56,11 +55,17 @@ func ExpensesCreateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = models.InsertExpense(newExpense)
-
 	if err != nil {
-		http.Error(w, "Ошибка сервера", http.StatusInternalServerError)
+		var appErr models.AppError
+
+		if errors.As(err, &appErr) {
+			http.Error(w, appErr.Message, appErr.Status)
+		} else {
+			http.Error(w, "Не пердвиденная ошибка", http.StatusInternalServerError)
+		}
 		return
 	}
+
 	w.WriteHeader(http.StatusCreated)
 	fmt.Fprint(w, "Трата добавлена")
 }
@@ -75,13 +80,14 @@ func GetExpenseByID(w http.ResponseWriter, r *http.Request) {
 	}
 	res, err := models.GetOneExpense(id)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			http.Error(w, "Элемента с таким ID не существует или он был удалён", http.StatusNotFound)
-			return
-		}
-		http.Error(w, "Ошибка сервера", http.StatusInternalServerError)
-		return
+		var appErr models.AppError
 
+		if errors.As(err, &appErr) {
+			http.Error(w, appErr.Message, appErr.Status)
+		} else {
+			http.Error(w, "Непредвиденная ошибка", http.StatusInternalServerError)
+		}
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -105,7 +111,13 @@ func ExpensesDel(w http.ResponseWriter, r *http.Request) {
 
 	err = models.DeleteFromID(id)
 	if err != nil {
-		http.Error(w, "Ошибка удаления", http.StatusNotFound)
+		var appErr models.AppError
+
+		if errors.As(err, &appErr) {
+			http.Error(w, appErr.Message, appErr.Status)
+		} else {
+			http.Error(w, "Непрежвиденная ошибка", http.StatusInternalServerError)
+		}
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")

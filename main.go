@@ -17,7 +17,7 @@ func main() {
 
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Ошибка чтения файла .env")
+		log.Println("Предупреждение: файл .env не найден, используем системные переменные окружения")
 	}
 	err = models.InitDB()
 	if err != nil {

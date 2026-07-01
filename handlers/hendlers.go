@@ -20,12 +20,44 @@ func HelloHandler(w http.ResponseWriter, r *http.Request) {
 
 // ! Созадние гет запроса, просим показать записи которые уже есть
 func ExpensesHandler(w http.ResponseWriter, r *http.Request) {
-	expenses, err := models.GetAllExpenses()
-	if err != nil {
-		http.Error(w, "Ошибка сервера", http.StatusInternalServerError)
-		return
+
+	pages := 1
+	pagesStr := r.URL.Query().Get("page")
+	if pagesStr != "" {
+		var err error
+		pages, err = strconv.Atoi(pagesStr)
+		if err != nil || pages <= 0 {
+			http.Error(w, "Ошибка параметра page", http.StatusBadRequest)
+			return
+
+		}
 	}
 
+	limit := 10
+	limitStr := r.URL.Query().Get("limit")
+	if limitStr != "" {
+		var err error
+		limit, err = strconv.Atoi(limitStr)
+		if err != nil || limit <= 0 {
+			http.Error(w, "Ошибка параемтра limit", http.StatusBadRequest)
+			return
+
+		}
+	}
+
+	offset := (pages - 1) * limit
+
+	expenses, err := models.GetAllExpenses(limit, offset)
+	if err != nil {
+		var appErr models.AppError
+
+		if errors.As(err, &appErr) {
+			http.Error(w, appErr.Message, appErr.Status)
+		} else {
+			http.Error(w, "Не пердвиденная ошибка", http.StatusInternalServerError)
+		}
+		return
+	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(expenses)

@@ -102,19 +102,29 @@ func DeleteFromID(id int) error {
 	return nil
 }
 
-func GetAllExpenses() ([]Expense, error) {
-	rows, err := DB.Query("SELECT id, name, price, category,deleted_at FROM expenses WHERE deleted_at IS NULL") //ищем каждое поле в таблице
+func GetAllExpenses(limit, offset int) ([]Expense, error) {
+	rows, err := DB.Query("SELECT id, name, price, category,deleted_at FROM expenses WHERE deleted_at IS NULL LIMIT $1 OFFSET $2", limit, offset) //ищем каждое поле в таблице
 
 	if err != nil {
-		return nil, err
+		return nil, AppError{
+			Err:     err,
+			Message: "Ошибка сервера",
+			Status:  http.StatusInternalServerError,
+		}
 	}
 	defer rows.Close()
+
 	var expenses []Expense
+
 	for rows.Next() {
 		var e Expense
 		err := rows.Scan(&e.ID, &e.Name, &e.Price, &e.Category, &e.DeletedAt) //сканируем каждую ячейку
 		if err != nil {
-			return nil, err
+			return nil, AppError{
+				Err:     err,
+				Message: "Ошибка сервера",
+				Status:  http.StatusInternalServerError,
+			}
 		}
 		expenses = append(expenses, e)
 	}

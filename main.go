@@ -2,13 +2,13 @@ package main
 
 import (
 	"CLIExpense/handlers"
+	"CLIExpense/middleware"
 	"CLIExpense/models"
 	"fmt"
 	"log"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
 	"github.com/joho/godotenv"
 )
 
@@ -27,7 +27,7 @@ func main() {
 	//!Создание главного роутера
 	r := chi.NewRouter()
 	//!подключаем логер middleware, после этого каждый запрос записывается в консоль
-	r.Use(middleware.Logger)
+	r.Use(middleware.TimingMiddleware)
 
 	//!определяем маршруты(rest API)
 

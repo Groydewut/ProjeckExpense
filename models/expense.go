@@ -239,15 +239,19 @@ func (b *Budget) TotalPrice() float64 { // получаем список тра�
 }
 
 // ! валидация ошибок
-func ValidateExpense(expense Expense) error {
-	if expense.Name == "" {
-		return errors.New("имя не может быть пустым")
+func ValidateExpense(expense Expense) map[string]string {
+	errors := make(map[string]string)
+	if strings.TrimSpace(expense.Name) == "" {
+		errors["name"] = "имя не может быть пустым"
 	}
 	if expense.Price <= 0 {
-		return errors.New("цена не может быть отрицательной или равной 0")
+		errors["price"] = "цена не может быть отрицательной или равной 0"
 	}
-	if expense.Category == "" {
-		return errors.New("поле категории не должно пустовать")
+	if strings.TrimSpace(expense.Category) == "" {
+		errors["category"] = "поле категории не должно пустовать"
+	}
+	if len(errors) > 0 {
+		return errors
 	}
 	return nil
 }

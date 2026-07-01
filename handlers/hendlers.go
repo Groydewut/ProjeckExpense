@@ -43,8 +43,15 @@ func ExpensesCreateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err = models.ValidateExpense(newExpense); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	response := models.ValidateExpense(newExpense)
+	if response != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		err = json.NewEncoder(w).Encode(response)
+		if err != nil {
+			http.Error(w, "Ошибка при кодировании файла.", http.StatusBadRequest)
+			return
+		}
 		return
 	}
 
